@@ -1,31 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { trips } from '../data/trips';
 import { TripCardComponent } from '../trip-card/trip-card.component';
-
-import { TripDataService } from '../services/trip-data.service';
 import { Trip } from '../models/trip';
-
+import { TripDataService } from '../services/trip-data.service';
 import { Router } from '@angular/router';
+import { AuthenticationService } from '../services/authentication.service';
 
 @Component({
   selector: 'app-trip-listing',
   standalone: true,
   imports: [CommonModule, TripCardComponent],
+  providers: [TripDataService],
   templateUrl: './trip-listing.component.html',
   styleUrl: './trip-listing.component.css',
-  providers: [TripDataService]
 })
-
 export class TripListingComponent implements OnInit {
-  
-  trips!: Trip[];
+  trips: Array<any> = trips;
   message: string = '';
-
   constructor(
     private tripDataService: TripDataService,
-    private router: Router
+    private router: Router,
+    private authenticationService: AuthenticationService
   ) {
-    console.log('trip-listing constructor');
+    console.log('trip-listing component');
+  }
+
+  public isLoggedIn() {
+    return this.authenticationService.isLoggedIn();
   }
 
   public addTrip(): void {
@@ -33,23 +35,20 @@ export class TripListingComponent implements OnInit {
   }
 
   private getStuff(): void {
-    this.tripDataService.getTrips()
-      .subscribe({
-        next: (value: any) => {
-          this.trips = value;
-          if(value.length > 0)
-          {
-            this.message = 'There are ' + value.length + ' trips available. ';
-          }
-          else{
-            this.message = 'There were no trips retrieved from the database';
-          }
-          console.log(this.message);
-        },
-        error: (error: any) => {
-          console.log('Error: ' + error);
+    this.tripDataService.getTrips().subscribe({
+      next: (value: any) => {
+        this.trips = value;
+        if (value.length > 0) {
+          this.message = 'There are ' + value.length + ' trips available.';
+        } else {
+          this.message = 'There were no trips retrived from the database.';
         }
-      })
+        console.log(this.message);
+      },
+      error: (error: any) => {
+        console.log('Error: ' + error);
+      },
+    });
   }
 
   ngOnInit(): void {
